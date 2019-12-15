@@ -32,6 +32,9 @@ class Users extends Api {
             ),
             'getInfoInWechat' => array(
                 'code'  => array('name' => 'code', 'require' => true, 'desc' => '微信CODE'),
+            ),
+            'APPgetOpenid' => array(
+                'code'  => array('name' => 'code', 'require' => true, 'desc' => '微信CODE'),
             )
         );
     }
@@ -133,6 +136,48 @@ class Users extends Api {
                     default:
                         $to = "location:https://takeaway.pykky.com/?firstlogin=0&openid=".$rs->openid;
                         header($to);
+                        break;
+                }
+            }
+        }else {
+            throw new InternalServerErrorException($rs->errmsg, 6);
+        }
+    }
+    /**
+     * 微信登陆回调获取openid-小程序版
+     * @desc 测试一下
+     */
+    public function APPgetOpenid() {
+        //用拿到的code请求微信服务器拿openid
+        $curl = new \PhalApi\CUrl();
+        $appid = 'wxf203d0e6cfbed41a';
+        $appsecret = '0cadbaed0bed536fed7f9fe732c1d2b0';
+        $rs = $curl->get('https://api.weixin.qq.com/sns/jscode2session?appid='.$appid.'&secret='.$appsecret.'&code='.$this->code.'&grant_type=authorization_code', 3000);
+        $rs = json_decode($rs);
+        if (property_exists($rs,'openid')) {
+            $domain = new DomainUsers();
+            $res = $domain->checkFirstByOpenid($rs->openid);
+            if ($res == -1) {
+                throw new InternalServerErrorException('创建openid失败', 41);
+            }else {
+                //跳转回去前端处理
+                switch ($res) {
+                    case '1':
+                        return array(
+                            'openid' => $rs->openid
+                        );
+                        break;
+                    
+                    case '2':
+                        return array(
+                            'openid' => $rs->openid
+                        );
+                        break;
+
+                    default:
+                        return array(
+                        'openid' => $rs->openid
+                        );
                         break;
                 }
             }

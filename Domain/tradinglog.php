@@ -250,7 +250,8 @@ class tradinglog {
             return -10;
         }
         $income = round(($userInfo['income']),2);
-        $fee = round(($income*0.3),2);
+        // $fee = round(($income*0.3),2);
+        $fee = 0.00;
         $OKmoney = round(($noun - $fee),2);
         //生成商家订单号
         $t = time();
